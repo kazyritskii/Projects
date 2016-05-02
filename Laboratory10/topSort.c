@@ -26,14 +26,14 @@ int dfs(int k,int* color,list* edges,Stack2** stack)
 	if (color[k-1] == 2)
 		return 0;
 	color[k - 1] = 1;
-	buf = edges[k - 1].next;
-	while (buf)
+	buf = &edges[k - 1];
+	while ((buf)&&(buf->val!=0))
 	{
 		if (dfs(buf->val, color, edges,stack) == 1)
 			return 1;
 		buf = buf->next;
 	}
-	push2(stack, edges[k - 1].val);
+	push2(stack, k);
 	color[k - 1] = 2;
 	return 0;
 }
@@ -49,6 +49,7 @@ int top_sort(int N,int* color,list*edges,Stack2** stack,int*numbers)
 {
 	int cycle;//датчмк цикла
 	int i;
+	int deg;
 	for (i = 1; i <= N; i++)
 	{
 		cycle = dfs(i, color, edges, stack);
@@ -57,7 +58,8 @@ int top_sort(int N,int* color,list*edges,Stack2** stack,int*numbers)
 	}
 	for (i = 0; i < N; i++)
 	{
-		numbers[pop2(stack)-1] = i+1;
+		deg = pop2(stack);
+		numbers[i] = deg;
 	}
 	return 1;
 }
@@ -73,7 +75,12 @@ void main()
 	Stack2* stack=NULL;
 	Stack2** head = &stack;
 	int* numbers;
-	scanf("%d", &N);
+	if (scanf("%d", &N) == EOF)
+	{
+		printf("bad number of lines");
+		return;
+	}
+	else
 	if ((N < 0) || (N>1000))//проверка входных данных
 	{
 		printf("bad number of vertices");
@@ -92,22 +99,33 @@ void main()
 	edges = (list*)malloc(N*sizeof(list));
 	for (i = 0; i < N; i++)//обнуление массива и заполнение значений
 	{
-		edges[i].val = i + 1;
+		edges[i].val = 0;
 		edges[i].next = NULL;
 	}
 	for (i = 0; i < M; i++)//заполнение списков смежностей
 	{
-		scanf("%d %d", &a, &b);
+		if (scanf("%d %d", &a, &b) == EOF)
+		{
+			printf("bad number of lines");
+			return;
+		}
+		else
 		if ((a<1) || (a>N) || (b<1) || (b>N))
 		{
 			printf("bad vertex");
 			return;
 		}
-		buf = &edges[a - 1];
-		buf = (list*)malloc(sizeof(list));
-		buf->next = edges[a - 1].next;
-		buf->val = b;
-		edges[a - 1].next = buf;
+		if (edges[a - 1].val == 0)
+		{
+			edges[a - 1].val = b;
+		}
+		else
+		{
+			buf = (list*)malloc(sizeof(list));
+			buf->next = edges[a - 1].next;
+			buf->val = b;
+			edges[a - 1].next = buf;
+		}
 		k++;
 	}
 	if (k < M)
